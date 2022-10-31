@@ -1,3 +1,6 @@
+import axios from 'axios'
+import instance from '../instance';
+
 const { createSlice, createAsyncThunk } = require('@reduxjs/toolkit');
 
 export const STATUSES = Object.freeze({
@@ -6,56 +9,37 @@ export const STATUSES = Object.freeze({
     LOADING: 'loading',
 });
 
-const productSlice = createSlice({
-    name: 'product',
-    initialState: {
-        data: [],
-        status: STATUSES.IDLE,
-    },
-    reducers: {
-        // setProducts(state, action) {
-        //     state.data = action.payload;
-        // },
-        // setStatus(state, action) {
-        //     state.status = action.payload;
-        // },
-    },
-    extraReducers: (builder) => {
-        builder
-            .addCase(fetchProducts.pending, (state, action) => {
-                state.status = STATUSES.LOADING;
-            })
-            .addCase(fetchProducts.fulfilled, (state, action) => {
-                state.data = action.payload;
-                state.status = STATUSES.IDLE;
-            })
-            .addCase(fetchProducts.rejected, (state, action) => {
-                state.status = STATUSES.ERROR;
-            });
-    },
-});
-
-export const { setProducts, setStatus } = productSlice.actions;
-export default productSlice.reducer;
-
 // Thunks
 export const fetchProducts = createAsyncThunk('products/fetch', async () => {
-    const res = await fetch('https://fakestoreapi.com/products');
+    const temp = await instance.get('products')
+    return temp.data
+});
+
+// Thunks
+export const fetchUsers = createAsyncThunk('users/fetch', async () => {
+    const res = await fetch('https://jsonplaceholder.typicode.com/users');
     const data = await res.json();
     return data;
 });
 
-// export function fetchProducts() {
-//     return async function fetchProductThunk(dispatch, getState) {
-//         dispatch(setStatus(STATUSES.LOADING));
-//         try {
-//             const res = await fetch('https://fakestoreapi.com/products');
-//             const data = await res.json();
-//             dispatch(setProducts(data));
-//             dispatch(setStatus(STATUSES.IDLE));
-//         } catch (err) {
-//             console.log(err);
-//             dispatch(setStatus(STATUSES.ERROR));
-//         }
-//     };
-// }
+const productSlice = createSlice({
+    name: 'product',
+    initialState: {
+        products: [],
+        users: [],
+        status: STATUSES.IDLE,
+    },
+    extraReducers: {
+        [fetchProducts.fulfilled]: (state, action) => {
+            state.products = action.payload;
+            state.status = STATUSES.IDLE;
+        },
+        [fetchUsers.fulfilled]: (state, action) => {
+            state.users = action.payload;
+            state.status = STATUSES.IDLE;
+        },
+      },
+});
+
+export default productSlice.reducer;
+
